@@ -1,5 +1,4 @@
-from flask import Flask
-from flask_cors import CORS
+from flask import Flask, jsonify, request
 
 from config.database import get_database_uri
 from database.models import db, init_db
@@ -12,13 +11,16 @@ def create_app() -> Flask:
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     app.config["JSON_SORT_KEYS"] = False
 
-    CORS(app)
     db.init_app(app)
     init_db(app)
 
     @app.route("/")
     def index():
-        return "Feasibility Report Engine API is running. Visit /api/health or POST /api/reports/generate."
+        return {
+            "status": "ok",
+            "service": "feasibility-report-engine",
+            "message": "API ready. Use /api/health or POST /api/reports/generate.",
+        }
 
     @app.route("/api/health")
     def health_check():
@@ -26,9 +28,12 @@ def create_app() -> Flask:
 
     @app.route("/api/reports/generate", methods=["POST"])
     def generate_report():
-        data = app.current_request.get_json(silent=True) or {}
-        report = generate_project_report(data)
-        return report, 200
+        payload = request.get_json(silent=True) or {}
+        try:
+            report = generate_project_report(payload)
+            return jsonify(report), 200
+        except ValueError as exc:
+            return jsonify({"error": str(exc)}), 400
 
     return app
 

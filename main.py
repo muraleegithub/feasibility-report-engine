@@ -1,24 +1,26 @@
+from __future__ import annotations
+
 from src.engine import generate_project_report
 
-if __name__ == "__main__":
-    sample = {
-        "project_name": "Sample Feasibility Study",
-        "description": "Demo project for validation",
-        "investment": 500000,
-        "annual_revenue": 220000,
-        "annual_cost": 120000,
-        "growth_rate": 0.06,
-        "years": 8,
-        "discount_rate": 0.1,
+
+def test_generate_project_report_basics():
+    payload = {
+        "project_name": "Test Feasibility",
+        "investment": 100000,
+        "annual_revenue": 50000,
+        "annual_cost": 25000,
+        "growth_rate": 0.08,
+        "years": 5,
         "currency": "USD",
+        "discount_rate": 0.1,
         "scenario": "base",
-        "political": 0.4,
-        "economic": 0.6,
-        "social": 0.5,
-        "technological": 0.7,
-        "strengths": ["Clear demand", "Experienced team"],
-        "weaknesses": ["High upfront cost", "Limited brand awareness"],
-        "opportunities": ["New market", "Partnerships"],
-        "threats": ["Competition", "Regulatory changes"],
     }
-    print(generate_project_report(sample))
+
+    report = generate_project_report(payload)
+    assert report["project_name"] == "Test Feasibility"
+    assert "metrics" in report
+    assert "cashflow" in report
+    assert "risk" in report
+    assert "strategic" in report
+    assert report["metrics"]["npv"] is not None
+    assert report["metrics"]["irr"] >= -100
