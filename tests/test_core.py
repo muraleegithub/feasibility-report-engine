@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from src.engine import generate_project_report
 
 
