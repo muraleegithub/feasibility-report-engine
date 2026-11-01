@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ project.name }} report{% endblock %}
+
+{% block content %}
+  <section class="page-header">
+    <h1>{{ project.name }}</h1>
+    <a class="btn" href="{{ url_for('index') }}">Back to projects</a>
+  </section>
+
+  {% if report %}
+    <div class="report-grid">
+      <article class="card">
+        <h2>Summary</h2>
+        <p>{{ report.summary }}</p>
+      </article>
+
+      <article class="card">
+        <h2>Key metrics</h2>
+        <ul>
+          <li>NPV: {{ report.metrics.npv }}</li>
+          <li>IRR: {{ report.metrics.irr }}%</li>
+          <li>ROI: {{ report.metrics.roi }}%</li>
+          <li>Payback period: {{ report.metrics.payback_period }} years</li>
+        </ul>
+      </article>
+
+      <article class="card">
+        <h2>Risk</h2>
+        <p><strong>Category:</strong> {{ report.risk.category }}</p>
+        <p><strong>Score:</strong> {{ report.risk.score }}</p>
+        <p>{{ report.risk.summary }}</p>
+      </article>
+
+      <article class="card">
+        <h2>PEST analysis</h2>
+        <p>{{ report.strategic.pest.summary }}</p>
+      </article>
+
+      <article class="card">
+        <h2>SWOT analysis</h2>
+        <p>{{ report.strategic.swot.summary }}</p>
+        <ul>
+          <li><strong>Strengths:</strong> {{ report.strategic.swot.strengths | join(', ') }}</li>
+          <li><strong>Weaknesses:</strong> {{ report.strategic.swot.weaknesses | join(', ') }}</li>
+          <li><strong>Opportunities:</strong> {{ report.strategic.swot.opportunities | join(', ') }}</li>
+          <li><strong>Threats:</strong> {{ report.strategic.swot.threats | join(', ') }}</li>
+        </ul>
+      </article>
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <p>No report generated yet for this project.</p>
+    </div>
+  {% endif %}
+{% endblock %}
