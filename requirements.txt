@@ -10,6 +10,7 @@ Flask-SQLAlchemy==3.0.5
 SQLAlchemy==2.0.19
 Werkzeug==2.3.3
 Jinja2==3.1.2
+reportlab==4.0.4
 
 # Test
 pytest==7.4.0

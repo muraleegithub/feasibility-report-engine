@@ -1,8 +1,48 @@
-from flask import Flask, jsonify, request, render_template, redirect, url_for
+import csv
+import json
+import re
+from io import BytesIO, StringIO
+
+from flask import Flask, Response, jsonify, redirect, render_template, request, send_file, url_for
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import letter
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
 from config.database import get_database_uri
-from database.models import db, init_db, Project, Report
+from database.models import Project, Report, db, init_db
 from src.engine import generate_project_report
+
+
+def slugify(value: str) -> str:
+    value = (value or "report").strip().lower()
+    value = re.sub(r"[^a-z0-9]+", "-", value)
+    return value.strip("-") or "report"
+
+
+def report_payload(project: Project, report: Report | None) -> dict:
+    metrics = (report.metrics if report and report.metrics else {}) if report else {}
+    risk = (report.risk if report and report.risk else {}) if report else {}
+    strategic = (report.strategic if report and report.strategic else {}) if report else {}
+    summary = report.summary if report and report.summary else "No summary available yet."
+
+    return {
+        "project": {
+            "id": project.id,
+            "name": project.name,
+            "description": project.description,
+            "currency": project.currency,
+            "investment": project.investment,
+            "annual_revenue": project.annual_revenue,
+            "annual_cost": project.annual_cost,
+            "growth_rate": project.growth_rate,
+            "years": project.years,
+        },
+        "summary": summary,
+        "metrics": metrics,
+        "risk": risk,
+        "strategic": strategic,
+    }
 
 
 def create_app() -> Flask:
@@ -41,7 +81,7 @@ def create_app() -> Flask:
                 "threats": request.form.getlist("threats"),
             }
 
-            report = generate_project_report(payload)
+            report_data = generate_project_report(payload)
 
             project = Project(
                 name=payload["project_name"],
@@ -59,10 +99,10 @@ def create_app() -> Flask:
 
             report_entry = Report(
                 project_id=project.id,
-                summary=report["summary"],
-                metrics=report["metrics"],
-                risk=report["risk"],
-                strategic=report["strategic"],
+                summary=report_data["summary"],
+                metrics=report_data["metrics"],
+                risk=report_data["risk"],
+                strategic=report_data["strategic"],
             )
 
             db.session.add(report_entry)
@@ -77,6 +117,82 @@ def create_app() -> Flask:
         project = Project.query.get_or_404(project_id)
         report = Report.query.filter_by(project_id=project_id).order_by(Report.id.desc()).first()
         return render_template("report.html", project=project, report=report)
+
+    @app.route("/projects/<int:project_id>/export")
+    def export_report(project_id):
+        project = Project.query.get_or_404(project_id)
+        report = Report.query.filter_by(project_id=project_id).order_by(Report.id.desc()).first()
+        data = report_payload(project, report)
+        export_format = (request.args.get("format", "json") or "json").lower()
+        filename = f"{slugify(project.name)}-report"
+
+        if export_format == "json":
+            return Response(
+                json.dumps(data, indent=2),
+                mimetype="application/json",
+                headers={"Content-Disposition": f'attachment; filename="{filename}.json"'},
+            )
+
+        if export_format == "csv":
+            csv_buffer = StringIO()
+            writer = csv.writer(csv_buffer)
+            metrics = data.get("metrics") or {}
+            risk = data.get("risk") or {}
+            writer.writerow(["project", "summary", "npv", "irr", "roi", "payback_period", "risk_category", "risk_score"])
+            writer.writerow([
+                project.name,
+                data.get("summary", ""),
+                metrics.get("npv", ""),
+                metrics.get("irr", ""),
+                metrics.get("roi", ""),
+                metrics.get("payback_period", ""),
+                risk.get("category", ""),
+                risk.get("score", ""),
+            ])
+            content = csv_buffer.getvalue()
+            return Response(
+                content,
+                mimetype="text/csv",
+                headers={"Content-Disposition": f'attachment; filename="{filename}.csv"'},
+            )
+
+        if export_format == "pdf":
+            pdf_buffer = BytesIO()
+            doc = SimpleDocTemplate(pdf_buffer, pagesize=letter)
+            styles = getSampleStyleSheet()
+            elements = []
+            elements.append(Paragraph(f"{project.name} - Feasibility Report", styles["Title"]))
+            elements.append(Spacer(1, 16))
+            elements.append(Paragraph(data.get("summary", ""), styles["BodyText"]))
+            elements.append(Spacer(1, 16))
+
+            table_data = [
+                ["Metric", "Value"],
+                ["NPV", str((data.get("metrics") or {}).get("npv", ""))],
+                ["IRR", f"{(data.get('metrics') or {}).get('irr', '')}%"],
+                ["ROI", f"{(data.get('metrics') or {}).get('roi', '')}%"],
+                ["Payback", f"{(data.get('metrics') or {}).get('payback_period', '')} years"],
+                ["Risk Category", str((data.get("risk") or {}).get("category", ""))],
+                ["Risk Score", str((data.get("risk") or {}).get("score", ""))],
+            ]
+            table = Table(table_data)
+            table.setStyle(TableStyle([
+                ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#0b2545")),
+                ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+                ("GRID", (0, 0), (-1, -1), 1, colors.grey),
+                ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.whitesmoke, colors.white]),
+            ]))
+            elements.append(table)
+            doc.build(elements)
+            pdf_buffer.seek(0)
+            return send_file(
+                pdf_buffer,
+                mimetype="application/pdf",
+                as_attachment=True,
+                download_name=f"{filename}.pdf",
+            )
+
+        return jsonify({"error": "Unsupported export format."}), 400
 
     @app.route("/api/health")
     def health_check():

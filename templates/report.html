@@ -4,29 +4,41 @@
 
 {% block content %}
   <section class="page-header">
-    <h1>{{ project.name }}</h1>
-    <a class="btn" href="{{ url_for('index') }}">Back to projects</a>
+    <div>
+      <p class="eyebrow">Feasibility report</p>
+      <h1>{{ project.name }}</h1>
+    </div>
+
+    <div class="header-actions">
+      <a class="btn btn-secondary" href="{{ url_for('index') }}">Back to projects</a>
+      <div class="export-group">
+        <span class="export-label">Export</span>
+        <a class="btn btn-primary" href="{{ url_for('export_report', project_id=project.id, format='json') }}">JSON</a>
+        <a class="btn btn-primary" href="{{ url_for('export_report', project_id=project.id, format='csv') }}">CSV</a>
+        <a class="btn btn-primary" href="{{ url_for('export_report', project_id=project.id, format='pdf') }}">PDF</a>
+      </div>
+    </div>
   </section>
 
   {% if report %}
     <div class="report-grid">
-      <article class="card">
+      <article class="card summary-card">
         <h2>Summary</h2>
         <p>{{ report.summary }}</p>
       </article>
 
-      <article class="card">
+      <article class="card metric-card">
         <h2>Key metrics</h2>
-        <ul>
-          <li>NPV: {{ report.metrics.npv }}</li>
-          <li>IRR: {{ report.metrics.irr }}%</li>
-          <li>ROI: {{ report.metrics.roi }}%</li>
-          <li>Payback period: {{ report.metrics.payback_period }} years</li>
+        <ul class="metrics-list">
+          <li><span>NPV</span><strong>{{ report.metrics.npv }}</strong></li>
+          <li><span>IRR</span><strong>{{ report.metrics.irr }}%</strong></li>
+          <li><span>ROI</span><strong>{{ report.metrics.roi }}%</strong></li>
+          <li><span>Payback</span><strong>{{ report.metrics.payback_period }} yrs</strong></li>
         </ul>
       </article>
 
-      <article class="card">
-        <h2>Risk</h2>
+      <article class="card risk-card">
+        <h2>Risk profile</h2>
         <p><strong>Category:</strong> {{ report.risk.category }}</p>
         <p><strong>Score:</strong> {{ report.risk.score }}</p>
         <p>{{ report.risk.summary }}</p>
@@ -40,7 +52,7 @@
       <article class="card">
         <h2>SWOT analysis</h2>
         <p>{{ report.strategic.swot.summary }}</p>
-        <ul>
+        <ul class="tag-list">
           <li><strong>Strengths:</strong> {{ report.strategic.swot.strengths | join(', ') }}</li>
           <li><strong>Weaknesses:</strong> {{ report.strategic.swot.weaknesses | join(', ') }}</li>
           <li><strong>Opportunities:</strong> {{ report.strategic.swot.opportunities | join(', ') }}</li>
