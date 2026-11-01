@@ -40,6 +40,7 @@ def create_app() -> Flask:
                 "opportunities": request.form.getlist("opportunities"),
                 "threats": request.form.getlist("threats"),
             }
+
             report = generate_project_report(payload)
 
             project = Project(
@@ -52,6 +53,7 @@ def create_app() -> Flask:
                 growth_rate=payload["growth_rate"],
                 years=payload["years"],
             )
+
             db.session.add(project)
             db.session.commit()
 
@@ -62,6 +64,7 @@ def create_app() -> Flask:
                 risk=report["risk"],
                 strategic=report["strategic"],
             )
+
             db.session.add(report_entry)
             db.session.commit()
 

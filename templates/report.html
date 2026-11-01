@@ -1,94 +1,56 @@
 {% extends 'base.html' %}
 
-{% block title %}New Project{% endblock %}
+{% block title %}{{ project.name }} report{% endblock %}
 
 {% block content %}
-  <section class="card form-card">
-    <h1>Create Feasibility Project</h1>
-    <form method="post">
-      <div class="grid">
-        <label>
-          Project name
-          <input type="text" name="project_name" required>
-        </label>
-        <label>
-          Description
-          <input type="text" name="description">
-        </label>
-        <label>
-          Currency
-          <input type="text" name="currency" value="USD">
-        </label>
-        <label>
-          Scenario
-          <select name="scenario">
-            <option value="base">Base</option>
-            <option value="best">Best</option>
-            <option value="worst">Worst</option>
-          </select>
-        </label>
-        <label>
-          Investment
-          <input type="number" step="0.01" name="investment" value="100000">
-        </label>
-        <label>
-          Annual revenue
-          <input type="number" step="0.01" name="annual_revenue" value="50000">
-        </label>
-        <label>
-          Annual cost
-          <input type="number" step="0.01" name="annual_cost" value="25000">
-        </label>
-        <label>
-          Growth rate
-          <input type="number" step="0.01" name="growth_rate" value="0.08">
-        </label>
-        <label>
-          Years
-          <input type="number" name="years" value="5">
-        </label>
-        <label>
-          Discount rate
-          <input type="number" step="0.01" name="discount_rate" value="0.10">
-        </label>
-        <label>
-          Political factor
-          <input type="number" step="0.01" name="political" value="0.5">
-        </label>
-        <label>
-          Economic factor
-          <input type="number" step="0.01" name="economic" value="0.5">
-        </label>
-        <label>
-          Social factor
-          <input type="number" step="0.01" name="social" value="0.5">
-        </label>
-        <label>
-          Technological factor
-          <input type="number" step="0.01" name="technological" value="0.5">
-        </label>
-      </div>
-
-      <div class="multi-inputs">
-        <label>
-          Strengths
-          <input type="text" name="strengths" value="Strong demand">
-        </label>
-        <label>
-          Weaknesses
-          <input type="text" name="weaknesses" value="Limited brand awareness">
-        </label>
-        <label>
-          Opportunities
-          <input type="text" name="opportunities" value="New market entry">
-        </label>
-        <label>
-          Threats
-          <input type="text" name="threats" value="Competition">
-        </label>
-      </div>
-
-      <button class="btn primary" type="submit">Generate report</button>
-    </form>
+  <section class="page-header">
+    <h1>{{ project.name }}</h1>
+    <a class="btn" href="{{ url_for('index') }}">Back to projects</a>
   </section>
+
+  {% if report %}
+    <div class="report-grid">
+      <article class="card">
+        <h2>Summary</h2>
+        <p>{{ report.summary }}</p>
+      </article>
+
+      <article class="card">
+        <h2>Key metrics</h2>
+        <ul>
+          <li>NPV: {{ report.metrics.npv }}</li>
+          <li>IRR: {{ report.metrics.irr }}%</li>
+          <li>ROI: {{ report.metrics.roi }}%</li>
+          <li>Payback period: {{ report.metrics.payback_period }} years</li>
+        </ul>
+      </article>
+
+      <article class="card">
+        <h2>Risk</h2>
+        <p><strong>Category:</strong> {{ report.risk.category }}</p>
+        <p><strong>Score:</strong> {{ report.risk.score }}</p>
+        <p>{{ report.risk.summary }}</p>
+      </article>
+
+      <article class="card">
+        <h2>PEST analysis</h2>
+        <p>{{ report.strategic.pest.summary }}</p>
+      </article>
+
+      <article class="card">
+        <h2>SWOT analysis</h2>
+        <p>{{ report.strategic.swot.summary }}</p>
+        <ul>
+          <li><strong>Strengths:</strong> {{ report.strategic.swot.strengths | join(', ') }}</li>
+          <li><strong>Weaknesses:</strong> {{ report.strategic.swot.weaknesses | join(', ') }}</li>
+          <li><strong>Opportunities:</strong> {{ report.strategic.swot.opportunities | join(', ') }}</li>
+          <li><strong>Threats:</strong> {{ report.strategic.swot.threats | join(', ') }}</li>
+        </ul>
+      </article>
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <p>No report generated yet for this project.</p>
+    </div>
+  {% endif %}
 {% endblock %}

@@ -1,23 +1,29 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{% block title %}Feasibility Report Engine{% endblock %}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
-  </head>
-  <body>
-    <nav class="topbar">
-      <div class="container">
-        <a href="{{ url_for('index') }}" class="brand">Feasibility Report Engine</a>
-        <div class="nav-links">
-          <a href="{{ url_for('index') }}">Projects</a>
-          <a href="{{ url_for('new_project') }}">New Project</a>
-        </div>
-      </div>
-    </nav>
-    <main class="container">
-      {% block content %}{% endblock %}
-    </main>
-  </body>
-</html>
+{% extends 'base.html' %}
+
+{% block title %}Projects{% endblock %}
+
+{% block content %}
+  <section class="page-header">
+    <h1>Projects</h1>
+    <a class="btn primary" href="{{ url_for('new_project') }}">Create new project</a>
+  </section>
+
+  {% if projects %}
+    <div class="card-grid">
+      {% for project in projects %}
+        <article class="card">
+          <h2>{{ project.name }}</h2>
+          <p><strong>Currency:</strong> {{ project.currency }}</p>
+          <p><strong>Investment:</strong> {{ project.investment }}</p>
+          <p><strong>Revenue:</strong> {{ project.annual_revenue }}</p>
+          <p><strong>Years:</strong> {{ project.years }}</p>
+          <a class="btn" href="{{ url_for('report_detail', project_id=project.id) }}">View report</a>
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <p>No projects yet. Create your first feasibility study.</p>
+    </div>
+  {% endif %}
+{% endblock %}

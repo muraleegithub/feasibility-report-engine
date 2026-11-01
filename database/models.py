@@ -62,9 +62,10 @@ def init_db(app=None):
     if app is not None:
         db.init_app(app)
 
-    if app is None:
+    app_obj = app
+    if app_obj is None:
         from flask import current_app
-        app = current_app._get_current_object()
+        app_obj = current_app._get_current_object()
 
-    with app.app_context():
+    with app_obj.app_context():
         db.create_all()

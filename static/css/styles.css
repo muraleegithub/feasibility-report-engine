@@ -1,56 +1,103 @@
-{% extends 'base.html' %}
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f5f7fb;
+  color: #222;
+}
 
-{% block title %}{{ project.name }} report{% endblock %}
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px;
+}
 
-{% block content %}
-  <section class="page-header">
-    <h1>{{ project.name }}</h1>
-    <a class="btn" href="{{ url_for('index') }}">Back to projects</a>
-  </section>
+.topbar {
+  background: #0b2545;
+  color: white;
+  padding: 16px 0;
+}
 
-  {% if report %}
-    <div class="report-grid">
-      <article class="card">
-        <h2>Summary</h2>
-        <p>{{ report.summary }}</p>
-      </article>
+.brand {
+  color: white;
+  text-decoration: none;
+  font-weight: bold;
+}
 
-      <article class="card">
-        <h2>Key metrics</h2>
-        <ul>
-          <li>NPV: {{ report.metrics.npv }}</li>
-          <li>IRR: {{ report.metrics.irr }}%</li>
-          <li>ROI: {{ report.metrics.roi }}%</li>
-          <li>Payback period: {{ report.metrics.payback_period }} years</li>
-        </ul>
-      </article>
+.nav-links {
+  display: flex;
+  gap: 16px;
+}
 
-      <article class="card">
-        <h2>Risk</h2>
-        <p><strong>Category:</strong> {{ report.risk.category }}</p>
-        <p><strong>Score:</strong> {{ report.risk.score }}</p>
-        <p>{{ report.risk.summary }}</p>
-      </article>
+.nav-links a {
+  color: white;
+  text-decoration: none;
+}
 
-      <article class="card">
-        <h2>PEST analysis</h2>
-        <p>{{ report.strategic.pest.summary }}</p>
-      </article>
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
 
-      <article class="card">
-        <h2>SWOT analysis</h2>
-        <p>{{ report.strategic.swot.summary }}</p>
-        <ul>
-          <li><strong>Strengths:</strong> {{ report.strategic.swot.strengths | join(', ') }}</li>
-          <li><strong>Weaknesses:</strong> {{ report.strategic.swot.weaknesses | join(', ') }}</li>
-          <li><strong>Opportunities:</strong> {{ report.strategic.swot.opportunities | join(', ') }}</li>
-          <li><strong>Threats:</strong> {{ report.strategic.swot.threats | join(', ') }}</li>
-        </ul>
-      </article>
-    </div>
-  {% else %}
-    <div class="empty-state">
-      <p>No report generated yet for this project.</p>
-    </div>
-  {% endif %}
-{% endblock %}
+.card-grid, .report-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.card {
+  background: white;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.form-card {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+input, select, button {
+  padding: 10px 12px;
+  border-radius: 6px;
+  border: 1px solid #d9dee7;
+}
+
+.btn {
+  display: inline-block;
+  padding: 10px 16px;
+  background: #e7edf8;
+  color: #123;
+  text-decoration: none;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+}
+
+.btn.primary {
+  background: #0b2545;
+  color: white;
+}
+
+.empty-state {
+  background: white;
+  border-radius: 10px;
+  padding: 24px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
