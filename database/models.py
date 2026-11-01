@@ -61,11 +61,10 @@ class Report(db.Model):
 def init_db(app=None):
     if app is not None:
         db.init_app(app)
-    from flask import current_app
 
-    try:
-        with current_app.app_context():
-            db.create_all()
-    except RuntimeError:
-        # Allows calling without an app context during import time.
-        return
+    if app is None:
+        from flask import current_app
+        app = current_app._get_current_object()
+
+    with app.app_context():
+        db.create_all()
